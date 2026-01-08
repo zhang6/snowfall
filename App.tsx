@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SnowCanvas from './components/SnowCanvas';
+import MusicPlayer from './components/MusicPlayer';
 import { Sparkles, Feather, CloudSnow } from 'lucide-react';
 
 // 预设的20首关于"凤"与"雪"的浪漫文案
@@ -317,6 +318,10 @@ const App: React.FC = () => {
             >
               <CloudSnow size={20} />
             </button>
+          </div>
+
+          <div className="hidden">
+            <MusicPlayer onPlayStateChange={() => {}} autoPlay={hasStarted} />
           </div>
         </>
       )}
