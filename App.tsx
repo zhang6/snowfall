@@ -40,10 +40,11 @@ const App: React.FC = () => {
   const [currentPoemIndex, setCurrentPoemIndex] = useState(0);
   const [isLoadingPoems, setIsLoadingPoems] = useState(false);
   const [isSwitchingPoem, setIsSwitchingPoem] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false); // 确保初始值为 false，显示入梦按钮
   const [phoenixUrl, setPhoenixUrl] = useState<string | null>(null);
   const [userHasAdjustedSnow, setUserHasAdjustedSnow] = useState(false);
   const [showSnowControl, setShowSnowControl] = useState(false);
+  const [displayedText, setDisplayedText] = useState<string>('');
 
   // Slowly increase snow intensity over time once started, unless user takes control
   useEffect(() => {
@@ -69,7 +70,64 @@ const App: React.FC = () => {
     loadPoemBatch();
     // 使用静态图片，不再调用AI生成
     setPhoenixUrl(USER_PHOENIX_URL);
+    // 确保初始状态：hasStarted 为 false，显示入梦按钮
+    setHasStarted(false);
   }, []);
+
+  // 计算当前诗歌
+  const currentPoem = poems[currentPoemIndex] || "凤舞雪落，\n思念如诗...";
+
+  // 打字机效果：当 currentPoem 变化时，逐字显示
+  useEffect(() => {
+    if (!currentPoem || currentPoem === "凤舞雪落，\n思念如诗...") {
+      // 如果是默认文案，直接显示
+      if (currentPoem === "凤舞雪落，\n思念如诗...") {
+        setDisplayedText(currentPoem);
+      } else {
+        setDisplayedText('');
+      }
+      setIsSwitchingPoem(false);
+      return;
+    }
+
+    setDisplayedText('');
+    setIsSwitchingPoem(false);
+    
+    let currentIndex = 0;
+    const fullText = currentPoem;
+    let timeoutId: NodeJS.Timeout | null = null;
+    
+    // 计算打字速度：中文字符稍慢，标点符号稍快，换行需要停顿
+    const getTypingDelay = (char: string): number => {
+      if (char === '\n') return 150; // 换行稍作停顿
+      if (/[，。！？；：]/.test(char)) return 120; // 标点符号稍快
+      if (/[\u4e00-\u9fa5]/.test(char)) return 80; // 中文字符
+      return 50; // 其他字符（如空格、英文）
+    };
+
+    const typeNextChar = () => {
+      if (currentIndex < fullText.length) {
+        setDisplayedText(fullText.slice(0, currentIndex + 1));
+        currentIndex++;
+        if (currentIndex < fullText.length) {
+          const delay = getTypingDelay(fullText[currentIndex - 1]);
+          timeoutId = setTimeout(typeNextChar, delay);
+        }
+      }
+    };
+
+    // 延迟一点开始打字，让切换动画更平滑
+    const timer = setTimeout(() => {
+      typeNextChar();
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [currentPoem]);
 
   const loadPoemBatch = async () => {
     setIsLoadingPoems(true);
@@ -85,13 +143,11 @@ const App: React.FC = () => {
     if (poems.length === 0 || isSwitchingPoem) return;
     
     setIsSwitchingPoem(true);
+    setDisplayedText(''); // 清空当前显示的文字
 
     setTimeout(() => {
       setCurrentPoemIndex((prev) => (prev + 1) % poems.length);
-      setTimeout(() => {
-          setIsSwitchingPoem(false);
-      }, 100); 
-    }, 600);
+    }, 300);
   };
 
   const startExperience = () => {
@@ -102,8 +158,6 @@ const App: React.FC = () => {
     setUserHasAdjustedSnow(true);
     setSnowIntensity(parseFloat(e.target.value));
   };
-
-  const currentPoem = poems[currentPoemIndex] || "凤舞雪落，\n思念如诗...";
 
   return (
     <div className="relative w-full h-screen bg-gradient-to-b from-[#0b1026] via-[#162044] to-[#25325c] overflow-hidden text-white selection:bg-indigo-500/30">
@@ -142,9 +196,9 @@ const App: React.FC = () => {
       {/* Main Content Area */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full px-4 text-center pointer-events-none">
         
-        {/* Intro Screen */}
+        {/* Intro Screen - 确保初始状态显示入梦按钮 */}
         {!hasStarted ? (
-          <div className="animate-fade-in space-y-8 p-10 rounded-3xl bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl max-w-md pointer-events-auto">
+          <div className="space-y-8 p-10 rounded-3xl bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl max-w-md pointer-events-auto animate-fade-in" style={{ opacity: 1, zIndex: 30 }}>
             <h1 className="text-4xl md:text-5xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-white to-blue-200 drop-shadow-lg">
               凤求凰 · 雪
             </h1>
@@ -157,7 +211,7 @@ const App: React.FC = () => {
               onClick={startExperience}
               className="group relative px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/30 rounded-full transition-all duration-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             >
-              <span className="flex items-center gap-2 text-lg tracking-widest font-light">
+              <span className="flex items-center gap-2 text-lg tracking-widest font-light text-white">
                 <Feather size={18} className="text-amber-200 group-hover:rotate-12 transition-transform" />
                 入梦
               </span>
@@ -190,22 +244,31 @@ const App: React.FC = () => {
                     </div>
                   ) : (
                     <div className="w-full relative">
-                       <div className={`space-y-4 transition-all duration-700 ease-in-out transform ${isSwitchingPoem ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}`}>
-                          {currentPoem.split('\n').map((line, index) => (
-                              <p 
-                              key={index} 
-                              className="text-xl md:text-3xl font-serif text-white/95 leading-relaxed tracking-wide text-glow animate-breath"
-                              >
-                              {line}
-                              </p>
-                          ))}
+                       <div className={`space-y-4 transition-opacity duration-300 ease-in-out ${isSwitchingPoem ? 'opacity-0' : 'opacity-100'}`}>
+                          {displayedText ? (
+                            displayedText.split('\n').map((line, index, array) => {
+                              const isLastLine = index === array.length - 1;
+                              const isTyping = displayedText.length < currentPoem.length;
+                              return (
+                                <p 
+                                key={index} 
+                                className="text-xl md:text-3xl font-serif text-white/95 leading-relaxed tracking-wide text-glow animate-breath"
+                                >
+                                {line}
+                                {/* 只在最后一行且正在打字时显示光标 */}
+                                {isLastLine && isTyping && (
+                                  <span className="inline-block w-0.5 h-[1.2em] bg-white/80 ml-1 align-middle" style={{ animation: 'blink 1s infinite' }}></span>
+                                )}
+                                </p>
+                              );
+                            })
+                          ) : (
+                            // 如果 displayedText 为空，显示默认文案或光标
+                            <p className="text-xl md:text-3xl font-serif text-white/95 leading-relaxed tracking-wide text-glow animate-breath">
+                              <span className="inline-block w-0.5 h-[1.2em] bg-white/80 ml-1 align-middle" style={{ animation: 'blink 1s infinite' }}></span>
+                            </p>
+                          )}
                        </div>
-                       
-                       {isSwitchingPoem && (
-                         <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
-                         </div>
-                       )}
                     </div>
                   )}
                 </div>
@@ -275,7 +338,7 @@ const App: React.FC = () => {
         }
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
+          50% { transform: translateY(-30px); }
         }
         @keyframes breath {
           0%, 100% { opacity: 0.95; transform: scale(1); }
@@ -295,6 +358,10 @@ const App: React.FC = () => {
         }
         .animate-pulse-slow {
           animation: pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
         }
         .animate-breath {
           animation: breath 5s ease-in-out infinite;
