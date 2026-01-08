@@ -1,12 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import SnowCanvas from './components/SnowCanvas';
 import MusicPlayer from './components/MusicPlayer';
-import { generatePoemBatch } from './services/geminiService';
-import { Sparkles, RefreshCcw, Feather, CloudSnow } from 'lucide-react';
+import { Sparkles, Feather, CloudSnow } from 'lucide-react';
 
-// 这里使用一个占位的高清冰凤凰/冰鸟图片。
-// 请将下方的 URL 替换为您实际上传图片的链接 (例如您托管在图床上的链接)
-const USER_PHOENIX_URL = "https://image.lexica.art/full_jpg/03837d38-6874-4536-932c-389772390740";
+// 预设的20首关于"凤"与"雪"的浪漫文案
+const STATIC_POEMS = [
+  "你靠近时，\n冬天开始退场，\n凤火不语，\n却亮了一生。",
+  "雪落满城，\n你站在原地，\n我忽然明白，\n为何凤会低飞。",
+  "若不是你，\n雪只是雪，\n火也不会，\n记得归途。",
+  "凤羽掠过雪夜，\n不是为了天空，\n而是为了\n你抬头的那一瞬。",
+  "你不说话，\n我却听见\n冰层碎裂的声音。",
+  "雪白漫长，\n你一句\"别走\"，\n让我学会\n怎样燃烧而不伤人。",
+  "凤不问结局，\n雪不问来处，\n我只问，\n你是否回头。",
+  "你站在寒风里，\n我却从未觉得冷，\n原来靠近\n本身就是火。",
+  "雪落在你睫毛，\n我忽然想停在此处，\n不再飞，\n不再躲。",
+  "若世界必须严寒，\n我愿替你\n先一步结霜。",
+  "凤火熄灭前，\n会留下些什么？\n也许是\n你唤我名字的声音。",
+  "你转身那刻，\n雪开始下，\n我知道有些炽热\n已无法收回。",
+  "我曾害怕寒冬，\n直到你出现，\n让我学会\n如何拥抱雪。",
+  "凤影落在你身旁，\n不是偶然，\n是我所有选择\n汇聚成的方向。",
+  "雪覆盖万物，\n却没能掩住\n我望向你的目光。",
+  "你在雪中走来，\n凤便失去了高度，\n原来心，\n会自行降落。",
+  "若时间结冰，\n我愿替你\n保留一片余温。",
+  "你离得越近，\n我越安静，\n所有炽热\n都变得小心。",
+  "雪夜尽头，\n凤回头一次，\n便足够\n走完余生。",
+  "当最后一片雪融化，\n你仍在我身旁，\n那一刻，\n无需任何词语。"
+];
+
+const generatePoemBatch = async (theme: string = "snow"): Promise<string[]> => {
+  return Promise.resolve(STATIC_POEMS);
+};
+
+// 使用本地的凤凰图片
+const USER_PHOENIX_URL = "/a.png";
 
 const App: React.FC = () => {
   const [snowIntensity, setSnowIntensity] = useState(0.0);
@@ -102,8 +128,8 @@ const App: React.FC = () => {
       {/* Static Phoenix Image (Fixed Bottom Left) */}
       {/* Using static user image instead of generated one */}
       {phoenixUrl && (
-        <div className="fixed bottom-0 left-[-20px] md:left-0 z-30 pointer-events-none transition-all duration-1000 animate-fade-in hidden sm:block">
-           <div className="relative w-72 h-72 md:w-[600px] md:h-[600px] mix-blend-screen opacity-90 animate-float origin-bottom pointer-events-auto">
+        <div className="fixed bottom-0 left-[-20px] sm:left-[-10px] md:left-0 z-30 pointer-events-none transition-all duration-1000 animate-fade-in">
+           <div className="relative w-48 h-48 sm:w-72 sm:h-72 md:w-[600px] md:h-[600px] mix-blend-screen opacity-90 animate-float origin-bottom pointer-events-auto">
              <img 
                src={phoenixUrl} 
                alt="Mystical Phoenix" 
@@ -146,7 +172,10 @@ const App: React.FC = () => {
               {/* Card Glow Background */}
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-400/10 via-indigo-500/10 to-blue-300/10 rounded-2xl blur-xl opacity-50 group-hover:opacity-80 transition duration-1000"></div>
               
-              <div className="relative px-8 py-12 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-2xl">
+              <div 
+                className="relative px-8 py-12 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-2xl cursor-pointer"
+                onClick={handleNextPoem}
+              >
                 
                 {/* Decorative Elements */}
                 <Feather className="absolute -top-4 -left-4 text-white/20 rotate-[-45deg] animate-pulse" size={32} />
@@ -179,18 +208,6 @@ const App: React.FC = () => {
                        )}
                     </div>
                   )}
-                </div>
-
-                {/* Generator Button */}
-                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button 
-                    onClick={handleNextPoem}
-                    disabled={isSwitchingPoem}
-                    className="p-3 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-all group/btn"
-                    title="下一首"
-                  >
-                    <RefreshCcw size={18} className={`transition-transform duration-700 ${isSwitchingPoem ? 'animate-spin' : 'group-hover/btn:rotate-180'}`} />
-                  </button>
                 </div>
               </div>
             </div>
@@ -242,7 +259,7 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          <MusicPlayer onPlayStateChange={() => {}} />
+          <MusicPlayer onPlayStateChange={() => {}} autoPlay={hasStarted} />
         </>
       )}
       

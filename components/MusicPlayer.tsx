@@ -3,17 +3,16 @@ import { Music, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 
 interface MusicPlayerProps {
   onPlayStateChange: (isPlaying: boolean) => void;
+  autoPlay?: boolean;
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlayStateChange }) => {
+const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlayStateChange, autoPlay = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // A royalty-free soothing piano track suitable for winter atmosphere
-  // Source: Kevin MacLeod - "Winter Reflections" (Using a reliable placeholder for demo)
-  // In a real app, this would be a local asset or verified CDN link.
-  const audioSrc = "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3"; 
+  // 使用本地抒情音乐文件
+  const audioSrc = "/snowNight.mp3"; 
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -40,14 +39,21 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ onPlayStateChange }) => {
     }
   }, []);
 
+  // 自动播放功能
+  useEffect(() => {
+    if (autoPlay && audioRef.current && !isPlaying) {
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          onPlayStateChange(true);
+        })
+        .catch(e => console.error("Autoplay prevented:", e));
+    }
+  }, [autoPlay, isPlaying, onPlayStateChange]);
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-black/30 backdrop-blur-md p-3 rounded-full border border-white/10 shadow-lg animate-fade-in-up">
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-black/30 backdrop-blur-md p-2 rounded-full border border-white/10 shadow-lg animate-fade-in-up">
       <audio ref={audioRef} src={audioSrc} />
-      
-      <div className="flex flex-col mr-2">
-        <span className="text-white text-xs font-light opacity-80">氛围音乐</span>
-        <span className="text-white text-[10px] opacity-60">Winter Piano</span>
-      </div>
 
       <button 
         onClick={toggleMute}
