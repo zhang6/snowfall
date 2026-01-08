@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SnowCanvas from './components/SnowCanvas';
 import MusicPlayer from './components/MusicPlayer';
 import { Sparkles, Feather, CloudSnow } from 'lucide-react';
+import { recordVisit, collectVisitInfo } from './services/supabaseService';
 
 // 预设的20首关于"凤"与"雪"的浪漫文案
 const STATIC_POEMS = [
@@ -70,6 +71,17 @@ const App: React.FC = () => {
     setPhoenixUrl(USER_PHOENIX_URL);
     // 确保初始状态：hasStarted 为 false，显示入梦按钮
     setHasStarted(false);
+  }, []);
+
+  // 记录访问信息（访问根目录时）
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    if (currentPath === '/' || currentPath === '') {
+      (async () => {
+        const visitData = await collectVisitInfo(currentPath);
+        recordVisit(visitData);
+      })();
+    }
   }, []);
 
   // 计算当前诗歌
