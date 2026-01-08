@@ -1,63 +1,29 @@
 import { GoogleGenAI } from "@google/genai";
 
-// 预设的20首浪漫冬日情诗，无需调用模型即可瞬间加载
+// 预设的20首关于“凤”与“雪”的浪漫文案
 const STATIC_POEMS = [
-  "雪落满城，念你如初，\n寒风虽冷，心有暖炉，\n愿作飞雪，落你肩头，\n共赴白首，岁月温柔。",
-  "冬日微光，雪色茫茫，\n你若回首，便是暖阳，\n手心温度，融化寒霜，\n此生与你，地久天长。",
-  "窗外飞雪，屋内茶香，\n对坐无言，情意深长，\n世界纯白，唯你斑斓，\n时光静好，如梦一场。",
-  "月色如水，雪落无声，\n思念成海，波涛翻涌，\n寄语风雪，带去深情，\n愿君安好，好梦独宠。",
-  "漫天雪舞，似我心跳，\n每一片雪，都是祈祷，\n愿风停时，你能来到，\n拥我入怀，暮暮朝朝。",
-  "寒夜虽长，有你便暖，\n雪落成诗，字字珠玑，\n红泥火炉，能饮一杯，\n与君同醉，不问归期。",
-  "天地一色，素裹银装，\n我也想藏，藏进你心房，\n不受风寒，不惹尘霜，\n安然栖息，地老天荒。",
-  "雪是冬的信，你是我的命，\n风起的时候，更想抱紧，\n世界再大，不过方寸，\n你在哪里，便是风景。",
-  "梅花枝头，雪意阑珊，\n相思入骨，怎么能够，\n若是重逢，在下个路口，\n我定牵手，绝不回头。",
-  "听雪落下，像你的情话，\n轻柔细腻，融化脸颊，\n不用多言，无需惊讶，\n爱是无声，最美的回答。",
-  "纷纷扬扬，落满衣裳，\n那是想念，变了模样，\n想变成雪，替你抵挡，\n世间寒凉，护你安康。",
-  "纯白世界，你是唯一，\n色彩斑斓，不及你眉眼，\n走过四季，看过流年，\n唯有爱你，从未改变。",
-  "雪夜寂静，心跳可听，\n每一下动，都是为你，\n若雪知意，应懂深情，\n替我吻你，直到天明。",
-  "冬天的风，吹来故事，\n关于相遇，关于相知，\n雪花作证，写下盟誓，\n此生不负，相爱成痴。",
-  "街角路灯，拉长身影，\n雪花飘落，如梦初醒，\n原来是你，走进生命，\n从此以后，满天繁星。",
-  "煮雪烹茶，等风也等你，\n雪落屋檐，滴答滴答，\n像极了心，在说话，\n说我爱你，无法自拔。",
-  "冰雪聪明，不及你深情，\n万物凋零，唯爱长青，\n待到春暖，花开满径，\n依然是你，伴我远行。",
-  "飞雪连天，遮不住眼，\n望穿秋水，只为一面，\n若能相见，何惧严寒，\n一眼万年，便是永远。",
-  "寒风凛冽，吹不散誓言，\n大雪纷飞，盖不住爱恋，\n心若向阳，无惧深渊，\n有你在旁，便是春天。",
-  "这一场雪，下的好认真，\n像我的爱，一往情深，\n愿这洁白，洗净红尘，\n留我与你，共度余生。"
+  "凤兮凤兮归故乡，\n遨游四海求其凰，\n雪落满头如白首，\n以此深情共苍茫。",
+  "冰羽晶莹映寒雪，\n金眸流转念君深，\n愿化神鸟穿云去，\n衔来红豆慰相思。",
+  "雪掩梧桐凤不栖，\n只为等风也等你，\n寒冰冻不住炽热，\n心有余温似朝晰。",
+  "听雪碎玉落纷纷，\n凤鸣九天只为君，\n涅槃千回终不悔，\n换得世世共清晨。",
+  "漫天飞雪舞苍穹，\n一点灵犀画彩凤，\n穿越时光的缝隙，\n只为落入你眼中。",
+  "山河远阔雪茫茫，\n凤舞九天意难藏，\n若能此刻同淋雪，\n也算此生共白头。",
+  "雪落无声掩红尘，\n凤羽轻颤动心魂，\n世间万物皆过客，\n唯你是我梦中人。",
+  "寒风吹彻玉门关，\n孤凤独鸣夜阑珊，\n不是人间留不住，\n只愿随君去远山。",
+  "这一场雪，\n是凤凰落下的羽翼，\n每一片洁白，\n都是我对你纯净的爱意。",
+  "你如凤凰涅槃，\n点亮我冰封的世界，\n雪花是婚礼的纱，\n风声是爱的誓约。",
+  "我在雪中等一只凤，\n也在风中等你回眸，\n天地寂静的时候，\n心跳声便是最美的歌。",
+  "凤非梧桐不栖，\n我非你手不牵，\n任凭大雪封山径，\n爱意自会开出路。",
+  "流光溢彩凤展翅，\n冰封万里雪成痴，\n两情若是久长时，\n又岂在朝朝暮暮。",
+  "雪花吻过你的眉，\n凤羽掠过我的心，\n这世间最冷的冬，\n藏着最暖的深情。",
+  "愿做你肩头的凤，\n看尽人间雪与霜，\n岁月漫长不孤单，\n有你便是温柔乡。",
+  "千山暮雪独自飞，\n万家灯火等谁归，\n凤鸣声声催人醉，\n此生只愿与君随。",
+  "雪是冬的眼泪，\n凤是火的轮回，\n我跨越冰与火的距离，\n只为拥抱你的余晖。",
+  "瑞雪兆丰年，\n彩凤舞翩跹，\n许下一个愿，\n岁岁常相见。",
+  "红尘万丈雪纷飞，\n凤求凰曲意相随，\n不用繁华三千世，\n只求风雪夜归人。",
+  "这漫天风雪，\n是我为你写的情书，\n凤舞之处，\n便是归途。"
 ];
 
 export const generatePoemBatch = async (theme: string = "snow"): Promise<string[]> => {
-  // 直接返回静态数据，不再调用 API，确保极速响应
   return Promise.resolve(STATIC_POEMS);
-};
-
-export const generateSnowmanImage = async (): Promise<string | null> => {
-  try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // Using gemini-2.5-flash-image for image generation
-    const modelId = "gemini-2.5-flash-image";
-    
-    // Updated prompt: 
-    // 1. "No red colors" - specified icy blue/silver instead.
-    // 2. "solid pure black background" - essential for the 'screen' blend mode to work (making it look transparent).
-    // 3. High quality 3D cartoon style.
-    const prompt = "A cute adorable 3D cartoon snowman, pure white snow texture, wearing a soft icy blue and silver scarf and knit beanie. NO RED colors. Glowing slightly, magical sparkles, cinematic moonlight lighting. The background must be strictly solid pure black (#000000) to allow for screen blending transparency. High quality, 8k resolution.";
-
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: {
-        parts: [{ text: prompt }]
-      }
-    });
-
-    for (const candidate of response.candidates || []) {
-      for (const part of candidate.content?.parts || []) {
-        if (part.inlineData && part.inlineData.data) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error("Error generating snowman image:", error);
-    return null;
-  }
 };
